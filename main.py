@@ -1,17 +1,15 @@
 import pandas as pd
+import joblib
 from utilities import request_json_data, clean_text
 import matplotlib.pyplot as plt
 import seaborn as sns
 import warnings
 from scipy.stats import pearsonr
 from sklearn import svm
-import joblib
-from sklearn.metrics import confusion_matrix, precision_score, recall_score, accuracy_score, f1_score, roc_auc_score, \
-  classification_report, average_precision_score
+from sklearn.metrics import confusion_matrix, precision_score, recall_score, accuracy_score, f1_score
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.metrics import classification_report
 from sklearn.pipeline import Pipeline
-from sklearn.feature_extraction.text import TfidfVectorizer, TfidfTransformer
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils.validation import DataConversionWarning
 
@@ -43,8 +41,7 @@ movies['imdbid'] = movies['imdb'].apply(lambda x: x.split('tt')[1])  # get the p
 
 # To get more data on the movies we join with movies dataset that includes 1794 movies
 # Merge datasets to create a new dataset
-movies_data = pd.merge(bechdel_data[['imdb_id', 'rating']], movies, how='right', left_on=['imdb_id'],
-                       right_on=['imdbid'])
+movies_data = pd.merge(bechdel_data[['imdb_id', 'rating']], movies, how='right', left_on=['imdb_id'], right_on=['imdbid'])
 
 # Imdb Dataset
 imdb = imdb.dropna(subset=['imdbID'])
@@ -136,12 +133,14 @@ cor = movies_features.corr(method='pearson')
 sns.heatmap(cor, annot=True, cmap=plt.cm.Reds)
 plt.show()
 corr1, _ = pearsonr(movies_features['budget_2013$'], movies_features['binary'])
-corr2, _ = pearsonr(movies_features['rating'], movies_features['binary'])
+corr2, _ = pearsonr(movies_features['budget_2013$'], movies_features['rating'])
+corr3, _ = pearsonr(movies_features['rating'], movies_features['binary'])
 
 print("As we can see there is no strong correlation of any feature with the rating (Bechdel score) or the PASS or "
       "FAIL label. There is correlation of {%.2f} between the budget of the movie and the PASS or FAIL label but "
-      "its not significant. There is a strong correlation of {%.2f} between the `rating` and the `binary`, "
-      "but there both score labels therefore can not be considered as ML features." % (corr1, corr2))
+      "its not significant. There is an even lower correlation of {%.2f} between the budget of the movie and rating("
+      "score) but its not significant. There is a strong correlation of {%.2f} between the `rating` and the `binary`, "
+      "but there both score labels therefore can not be considered as ML features." % (corr1, corr2, corr3))
 
 # Introduce more features
 
