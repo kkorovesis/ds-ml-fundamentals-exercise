@@ -13,8 +13,11 @@ from sklearn.metrics import classification_report
 from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import TfidfVectorizer, TfidfTransformer
 from sklearn.preprocessing import StandardScaler
+from sklearn.utils.validation import DataConversionWarning
 
 warnings.filterwarnings("ignore")
+warnings.filterwarnings("ignore", category=DataConversionWarning)
+
 
 # EXTRA data ----------------------------------------------------------------------
 # actors_gender_data = pd.read_csv("https://raw.githubusercontent.com/taubergm/HollywoodGenderData/master/all_actors_movies_gender_gold.csv")
@@ -232,7 +235,6 @@ for idx, gs in enumerate([SVM]):
 print('\nClassifier with best test set accuracy: %s' % grid_dict[best_clf])
 
 y_pred = SVM.predict(X_test)
-
 cm = confusion_matrix(y_test, y_pred)
 macro_precision = precision_score(y_test, y_pred, average='macro')
 micro_precision = precision_score(y_test, y_pred, average='micro')
