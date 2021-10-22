@@ -2,7 +2,9 @@ import pandas as pd
 from utilities import request_json_data, clean_text
 import matplotlib.pyplot as plt
 import seaborn as sns
-
+import warnings
+from scipy.stats import pearsonr
+warnings.filterwarnings("ignore")
 
 # EXTRA data ----------------------------------------------------------------------
 actors_gender_data = pd.read_csv("https://raw.githubusercontent.com/taubergm/HollywoodGenderData/master/all_actors_movies_gender_gold.csv")
@@ -18,6 +20,8 @@ bechdel_data = pd.read_csv("https://raw.githubusercontent.com/rfordatascience/ti
 
 # task 1 ---------------------------------------------------------------------------------------------------------------
 # 1.
+bechdel_data['year'] = bechdel_data['year'].astype('int')
+bechdel_data['rating'] = bechdel_data['rating'].astype('int')
 bechdel_data.loc[bechdel_data['year'] < 2022, ['year', 'rating']].groupby(['year']).mean().rename(columns={'rating': 'avg rating'}).plot()
 plt.title('Average Bechdel Score Per Year')
 plt.show()
@@ -92,26 +96,29 @@ movies_data['title'] = movies_data['title'].apply(lambda x: clean_text(x))
 
 
 # 3.
-'''
-Index(['year', 'imdb', 'title', 'test', 'clean_test', 'binary', 'budget',
-       'domgross', 'intgross', 'code', 'budget_2013$', 'domgross_2013$',
-       'intgross_2013$', 'period code', 'decade code', 'imdbid'],
-      dtype='object')
-'''
 
-# Test correlation on current features
+# Test correlation on movie features
 
 dataset_labels = movies_data[['imdbid', 'title', 'test', 'clean_test', 'binary', 'rating']]
 
-df = movies_data[['year', 'budget', 'domgross', 'intgross', 'budget_2013$', 'domgross_2013$', 'intgross_2013$', 'rating', 'binary']]
-for col in ['budget', 'domgross', 'intgross', 'budget_2013$', 'domgross_2013$', 'intgross_2013$', 'rating']:
-  df[col] = df[col].astype(float)
+movies_features = movies_data[['year', 'budget_2013$', 'domgross_2013$', 'intgross_2013$', 'rating', 'binary']]
+for col in ['budget_2013$', 'domgross_2013$', 'intgross_2013$', 'rating']:
+  movies_features[col] = movies_features[col].astype(float)
 
-df['binary'] = df['binary'].apply(lambda x: 1 if x == "PASS" else 0)
+movies_features['binary'] = movies_features['binary'].apply(lambda x: 1 if x == "PASS" else 0)
+movies_features = movies_features.dropna()
 
-cor = df.corr()
+cor = movies_features.corr(method='pearson')
 sns.heatmap(cor, annot=True, cmap=plt.cm.Reds)
 plt.show()
+corr1, _ = pearsonr(movies_features['budget_2013$'], movies_features['binary'])
+corr2, _ = pearsonr(movies_features['rating'], movies_features['binary'])
+
+print("As we can see there is no strong correlation of any feature with the rating (Bechdel score) or the PASS or "
+      "FAIL label. There is correlation of {%.2f} between the budget of the movie and the PASS or FAIL label but "
+      "its not significant. There is a strong correlation of {%.2f} between the `rating` and the `binary`, "
+      "but there both score labels therefore can not be considered as ML features." % (corr1, corr2))
+
 
 # Introduce more features
 
@@ -130,10 +137,11 @@ other_movies_features = pd.merge(
 other_movies_features['binary'] = other_movies_features['binary'].apply(lambda x: 1 if x == "PASS" else 0)
 other_movies_features['bechdel_rating'] = other_movies_features['rating'].astype(float)
 del other_movies_features['rating']
+other_movies_features = other_movies_features.dropna()
 
-
-cor = other_movies_features.corr()
+cor = other_movies_features.corr(method='pearson')
 sns.heatmap(cor, annot=True, cmap=plt.cm.Reds)
 plt.show()
-
+corr, _ = pearsonr(other_movies_features['imdbVotes'], other_movies_features['binary'])
+print("There is correlation of {%.2f} between the imdb Votes of the movie and the PASS or FAIL label but its not significant." % corr)
 
