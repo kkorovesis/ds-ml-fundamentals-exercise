@@ -11,4 +11,5 @@ $ pip install -r requirements.txt
 ```text
 $ jupyter notebook
 ```
-#### Wait for the outputs and read the reports
+
+#### Finally open ds_ml_exercise.ipynb, wait for the outputs and read the reports
