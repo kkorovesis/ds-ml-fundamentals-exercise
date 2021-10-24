@@ -1,9 +1,12 @@
 import pandas as pd
 import joblib
-from utilities import request_json_data, clean_text
 import matplotlib.pyplot as plt
 import seaborn as sns
-import warnings
+import json
+import matplotlib.pyplot as plt
+import unicodedata
+from html import unescape
+from urllib import request
 from scipy.stats import pearsonr
 from sklearn import svm
 from sklearn.linear_model import LogisticRegression
@@ -13,9 +16,30 @@ from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.metrics import classification_report
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
-from sklearn.utils.validation import DataConversionWarning
-from sklearn.exceptions import ConvergenceWarning
 import numpy as np
+import seaborn as sn
+
+
+def request_json_data(url):
+  """
+  Request url data
+  :param url:
+  :return:
+  """
+  with request.urlopen(url) as j:
+    data = json.loads(j.read().decode())
+  return data
+
+
+def clean_text(text):
+  """
+  Deal with artifacts and remove accent (e.g á -> a)
+  :param text:
+  :return:
+  """
+  text = unescape(text)
+  return ''.join(c for c in unicodedata.normalize('NFD', text)
+                 if unicodedata.category(c) != 'Mn')
 
 
 # EXTRA data ----------------------------------------------------------------------
@@ -264,10 +288,10 @@ for idx, gs in enumerate(gs_models):
     best_clf = idx
 print('\nClassifier with best accuracy: %s' % gs_models_dict[best_clf])
 
-feature_importances = gs.best_estimator_._final_estimator.feature_importances_
 
 y_pred = best_gs.predict(X_test)
 cm = confusion_matrix(y_test, y_pred)
+macro_precision = precision_score(y_test, y_pred, average='macro', labels=np.unique(y_pred))
 macro_precision = precision_score(y_test, y_pred, average='macro', labels=np.unique(y_pred))
 micro_precision = precision_score(y_test, y_pred, average='micro', labels=np.unique(y_pred))
 weighted_precision = precision_score(y_test, y_pred, average='weighted', labels=np.unique(y_pred))
@@ -278,6 +302,23 @@ acc = accuracy_score(y_test, y_pred)
 f1_macro = f1_score(y_test, y_pred, average='macro', labels=np.unique(y_pred))
 f1_micro = f1_score(y_test, y_pred, average='micro', labels=np.unique(y_pred))
 f1_weighted = f1_score(y_test, y_pred, average='weighted', labels=np.unique(y_pred))
+
+df_cm = pd.DataFrame(cm)
+sn.heatmap(df_cm, annot=True, annot_kws={"size": 16}, cmap='Blues', fmt='g')
+plt.title('Confusion Matrix')
+plt.show()
+
+df_cm = pd.DataFrame(cm.sum(axis=1))
+sn.heatmap(df_cm.round(2), annot=True, annot_kws={"size": 16}, cmap='Blues', fmt='g')
+plt.title('Sums Matrix')
+plt.show()
+
+df_cm = pd.DataFrame(cm.astype('float') / cm.sum(axis=1))
+sn.heatmap(df_cm.round(2), annot=True, annot_kws={"size": 16}, cmap='Blues', fmt='g')
+plt.title('Normalized Confusion Matrix')
+plt.show()
+
+
 
 print('')
 print('Testing samples: %i' % len(y_test))
@@ -296,17 +337,6 @@ print('Macro Recall: {0:0.2f}%'.format(100 * macro_recall))
 print('Micro Recall: {0:0.2f}%'.format(100 * micro_recall))
 print('Weighted Recall: {0:0.2f}%'.format(100 * weighted_recall))
 print('\n')
-print('Confusion Matrix')
-print('-' * 20)
-print(cm)
-print('\n')
-print('Sums Matrix')
-print('-' * 20)
-print(cm.sum(axis=1))
-print('\n')
-print(f'Normalized Confusion Matrix:')
-print('-' * 40)
-print(cm.astype('float') / cm.sum(axis=1))
 print('\n')
 print('Classification Report')
 print('-' * 60)
