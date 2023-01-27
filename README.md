@@ -24,4 +24,4 @@ Run jupyter notebook.
 ```text
 $ jupyter notebook
 ```
-Finally open ds_ml_exercise.ipynb, wait for the outputs and read the reports
+Finally open [ds_ml_exercise.ipynb](ds_ml_exercise.ipynb).
