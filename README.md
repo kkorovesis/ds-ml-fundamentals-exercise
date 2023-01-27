@@ -1,5 +1,6 @@
 # Data Science Machine Learning Fundamentals Exercise
 
+
 #### Task 1
 1. Load the raw bechdel dataset in a kupyter notebook and plot avergae score per year and answer a question regarding movies' score
 
@@ -25,3 +26,5 @@ Run jupyter notebook.
 $ jupyter notebook
 ```
 Finally open [ds_ml_exercise.ipynb](ds_ml_exercise.ipynb).
+
+
