@@ -14,6 +14,8 @@
 2. Evaluate the model.
 3. How can we improve the performace of the model ?
 
+​Note: The dataset is not sufficient to train a model we only care for your approach to the problem.
+
 ### To run the exercise
 
 Create a python (3.8.5) environment and activate it.
