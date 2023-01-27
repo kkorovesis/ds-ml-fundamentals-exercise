@@ -1,4 +1,4 @@
-# Data Science Machine Learning Fundamentals Exercise
+# Data Science - Machine Learning Fundamentals - Exercise
 
 
 #### Task 1
